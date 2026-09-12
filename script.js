@@ -532,9 +532,10 @@ if (sliderVolume) {
 
 if (cardWrapper && mainGlassPlate) {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const hasFinePointer = window.matchMedia('(pointer: fine)').matches;
 
-    // Aplica o efeito 3D apenas se o usuário não tiver preferência de movimento reduzido
-    if (!prefersReducedMotion) {
+    // Aplica o efeito 3D apenas no desktop com mouse e se não houver preferência de movimento reduzido
+    if (!prefersReducedMotion && hasFinePointer) {
         const handleTilt = (e) => {
             const rect = cardWrapper.getBoundingClientRect();
             const x = e.clientX - rect.left;
