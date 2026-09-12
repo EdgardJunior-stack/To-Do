@@ -4,30 +4,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+    <meta name="description"
+        content="Neo-Tactile To-Do: Um gerenciador de tarefas moderno, tátil e seguro com design de nível Awwwards e arquitetura de ponta.">
+
+    <!-- Segurança: Política de Segurança de Conteúdo (CSP estrito via skill frontend-security-coder) -->
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; font-src https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self'; img-src 'self' data:; connect-src 'self';">
+
+    <title>Gerenciador de Tarefas</title>
+
+    <!-- Tipografia Google Fonts: Plus Jakarta Sans e Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Merienda&display=swap" rel="stylesheet">
-    <title>To-Do</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
 </head>
 
-
 <body>
+    <!-- Luzes e Brilhos Atmosféricos de Fundo -->
+    <div class="ambient-glow glow-cyan" aria-hidden="true"></div>
+    <div class="ambient-glow glow-blue" aria-hidden="true"></div>
+    <div class="ambient-glow glow-top" aria-hidden="true"></div>
 
-    <header>
-        <h1 class="titulo">Minhas Tarefas</h1>
-        <input type="text" id="campo-tarefa" placeholder="Digite uma tarefa">
-        <button id="botao-adicionar">Adicionar</button>
-    </header>
+    <main class="app-layout" role="main">
+        <!-- Painel Principal de Vidro Fosco Neo-Tactile -->
+        <div class="tactile-card-wrapper" id="cardWrapper">
+            <section class="tactile-glass-plate" id="mainGlassPlate" aria-label="Gerenciador de Tarefas">
+                <!-- Camada de Reflexo de Luz Especular -->
+                <div class="specular-reflection" aria-hidden="true"></div>
 
-    <main>
-        <ul id="lista-tarefas">
-        </ul>
+                <!-- Barra Superior do Aplicativo -->
+                <header class="app-header">
+                    <div class="user-badge">
+                        <div class="avatar-ring" aria-hidden="true">
+                            <span class="avatar-emoji">⚡</span>
+                        </div>
+                        <div class="user-meta">
+                            <span class="brand-title">TAREFAS</span>
+                            <span class="brand-subtitle">Dia a dia</span>
+                        </div>
+                    </div>
+
+                    <div class="header-actions">
+                        <button class="tactile-icon-btn" id="btn-stats" title="Estatísticas Rápidas"
+                            aria-label="Abrir estatísticas rápidas">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <line x1="18" y1="20" x2="18" y2="10"></line>
+                                <line x1="12" y1="20" x2="12" y2="4"></line>
+                                <line x1="6" y1="20" x2="6" y2="14"></line>
+                            </svg>
+                        </button>
+                        <button class="tactile-icon-btn" id="btn-menu" title="Alternar Modo de Foco"
+                            aria-label="Alternar modo de foco">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                                <line x1="4" y1="7" x2="20" y2="7"></line>
+                                <line x1="4" y1="12" x2="20" y2="12"></line>
+                                <line x1="4" y1="17" x2="20" y2="17"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </header>
+
+                <!-- Pílulas Táteis de Filtro: Padrão e Ativo -->
+                <nav class="pill-segmented-control" aria-label="Filtro de status de tarefas">
+                    <button class="tactile-pill" data-filter="all" id="pill-all" aria-pressed="false">Todas</button>
+                    <button class="tactile-pill active" data-filter="active" id="pill-active"
+                        aria-pressed="true">Ativas</button>
+                    <button class="tactile-pill" data-filter="completed" id="pill-completed"
+                        aria-pressed="false">Feitas</button>
+                </nav>
+
+                <!-- Campo de Entrada Tátil -->
+                <section class="tactile-input-box" aria-labelledby="input-label">
+                    <h2 id="input-label" class="sr-only">Adicionar Nova Tarefa</h2>
+                    <div class="input-main-row">
+                        <input type="text" id="campo-tarefa" placeholder="O que vamos realizar agora?" maxlength="120"
+                            autocomplete="off" spellcheck="false" aria-label="Título da nova tarefa">
+                        <button id="botao-adicionar" class="btn-add-primary" aria-label="Confirmar e adicionar tarefa"
+                            title="Adicionar tarefa">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="input-options-row">
+                        <fieldset class="tag-selector" aria-label="Selecionar categoria da tarefa">
+                            <legend class="sr-only">Categoria</legend>
+                            <button type="button" class="category-tag active" data-tag="Lembrar"
+                                aria-pressed="true">Lembrar</button>
+                            <button type="button" class="category-tag" data-tag="Importante"
+                                aria-pressed="false">Importante</button>
+                            <button type="button" class="category-tag" data-tag="Urgente"
+                                aria-pressed="false">Urgente</button>
+                            <button type="button" class="category-tag" data-tag="Foco"
+                                aria-pressed="false">Foco</button>
+                        </fieldset>
+                    </div>
+                </section>
+
+                <!-- Barra de Ações Rápida Escura -->
+                <section class="dark-control-bar" aria-label="Ações rápidas e progresso">
+
+                    <button class="control-btn" id="btn-clear-done" title="Limpar Tarefas Concluídas"
+                        aria-label="Excluir todas as tarefas concluídas">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                    <button class="control-btn" id="btn-random-focus" title="Sugestão de Foco Aleatório"
+                        aria-label="Sugerir uma tarefa ativa aleatória">
+                        <span>🤔</span>
+                    </button>
+
+
+                    <!-- Anel Circular de Progresso Neon Ciano com Brilho -->
+                    <div class="progress-ring-container" title="Progresso geral das tarefas" role="progressbar"
+                        aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBar">
+                        <svg class="progress-ring" width="46" height="46" aria-hidden="true">
+                            <circle class="progress-ring-track" stroke="rgba(255,255,255,0.08)" stroke-width="3.5"
+                                fill="transparent" r="18" cx="23" cy="23" />
+                            <circle class="progress-ring-fill" id="progressCircle" stroke="#00f2fe" stroke-width="3.5"
+                                stroke-linecap="round" fill="transparent" r="18" cx="23" cy="23" />
+                        </svg>
+                        <span class="progress-text" id="progressPercent" aria-hidden="true">0%</span>
+                    </div>
+                </section>
+
+                <!-- Seção de Controles Táteis: Switch 3D e Controle Deslizante -->
+                <section class="tactile-controls-panel" aria-label="Configurações de Sensibilidade e Som">
+                    <div class="control-row">
+                        <div class="slider-wrapper">
+                            <div class="slider-meta">
+                                <label for="slider-volume" class="slider-label">Sensibilidade Sonora</label>
+                                <span class="slider-val" id="volumeDisplay" aria-live="polite">75%</span>
+                            </div>
+                            <div class="slider-track-container">
+                                <input type="range" min="0" max="100" value="75" class="tactile-slider"
+                                    id="slider-volume" aria-label="Volume do clique sonoro tátil">
+                                <div class="slider-fill" id="volumeFill" style="width: 75%;" aria-hidden="true"></div>
+                            </div>
+                        </div>
+
+                        <!-- Interruptor Físico 3D -->
+                        <div class="switch-block" title="Ativar ou desativar feedback sonoro">
+                            <span class="switch-caption" id="switchStateText">On</span>
+                            <label class="tactile-switch" for="toggle-sound">
+                                <span class="sr-only">Ativar feedback sonoro</span>
+                                <input type="checkbox" id="toggle-sound" checked aria-checked="true">
+                                <span class="switch-slider" aria-hidden="true"></span>
+                            </label>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Cartão da Lista de Tarefas (Estilo 'Modal' da Referência) -->
+                <section class="tactile-modal-card" aria-labelledby="modal-card-title">
+                    <div class="modal-card-header">
+                        <div class="modal-identity">
+                            <div class="mini-avatar" aria-hidden="true">✦</div>
+                            <h2 class="modal-title" id="modal-card-title">Tarefas Atuais</h2>
+                        </div>
+                        <div class="modal-actions">
+                            <span class="task-counter-pill" id="task-counter" aria-live="polite">0 tarefas</span>
+                        </div>
+                    </div>
+
+                    <!-- Lista Dinâmica de Tarefas -->
+                    <ul id="lista-tarefas" class="neo-task-list" role="list" aria-label="Lista de tarefas">
+                        <!-- Elementos inseridos com segurança via DOM API em script.js -->
+                    </ul>
+
+                    <!-- Estado Vazio Acessível -->
+                    <div id="empty-state" class="empty-state-view" role="status">
+                        <div class="empty-icon" aria-hidden="true">✓</div>
+                        <p class="empty-title">Tudo limpo por aqui</p>
+                        <p class="empty-subtitle">Adicione uma tarefa no campo acima para começar a produzir.</p>
+                    </div>
+                </section>
+
+                <!-- Rodapé com Créditos do Autor e Segurança -->
+                <footer class="tactile-footer">
+                    <p>Feito por • <a href="https://github.com/EdgardJunior-stack" target="_blank"
+                            rel="noopener noreferrer">Edgard Junior</a></p>
+                </footer>
+            </section>
+        </div>
     </main>
 
-    <footer>
-        <p>Feito por <a href="https://github.com/EdgardJunior-stack" target="_blank">Edgard Junior</a></p>
-    </footer>
+
+
+    <!-- TUTORIAL -->
+    <div id="tutorial" class="tutorial" style="display: none;">
+        <div class="tutorial-card">
+            <div class="tutorial-header">
+                <span class="tutorial-step" id="tutorial-step">Dica 1 de 2</span>
+                <button class="tutorial-close" id="tutorial-close" title="Fechar">X</button>
+            </div>
+
+            <h3 class="tutorial-title" id="tutorial-title">Dica</h3>
+            <p class="tutorial-description" id="tutorial-description">Descrição</p>
+
+            <div class="tutorial-footer">
+                <button class="tutorial-next" id="tutorial-next">Próxima ➔</button>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>

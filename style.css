@@ -1,65 +1,1346 @@
-* {
-    padding: 0;
+/* ==========================================================================
+   SISTEMA DE TAREFAS
+   ========================================================================== */
+
+:root {
+    /* Paleta de Cores */
+    --canvas-bg: #0b0f17;
+    --canvas-dark: #080b11;
+    --glass-surface: rgba(20, 27, 40, 0.65);
+    --glass-border-light: rgba(255, 255, 255, 0.18);
+    --glass-border-dim: rgba(255, 255, 255, 0.06);
+    --glass-specular: rgba(255, 255, 255, 0.38);
+
+    /* Acentos Neon Elétricos */
+    --neon-cyan: #00f2fe;
+    --neon-cyan-glow: rgba(0, 242, 254, 0.45);
+    --electric-blue: #3b82f6;
+    --electric-blue-deep: #1d4ed8;
+    --electric-blue-glow: rgba(59, 130, 246, 0.55);
+
+    /* Materiais Táteis */
+    --ceramic-light: #f8fafc;
+    --ceramic-border: rgba(255, 255, 255, 0.9);
+    --tactile-dark-bar: #161c28;
+    --tactile-dark-item: #212938;
+    --tactile-text-dark: #0f172a;
+    --tactile-text-muted: #64748b;
+    --tactile-text-light: #f8fafc;
+
+    /* Tipografia */
+    --font-heading: 'Outfit', sans-serif;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+
+    /* Transições e Movimento */
+    --spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --smooth-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Reset e Padrões de Acessibilidade */
+*,
+*::before,
+*::after {
     margin: 0;
+    padding: 0;
     box-sizing: border-box;
-    list-style: none;
-    text-decoration: none;
-    font-family: 'Merienda', cursive;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utilitário para Leitores de Tela (Apenas acessibilidade) */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Anel de Foco para Navegação por Teclado */
+:focus-visible {
+    outline: 2px var(--neon-cyan) !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 10px var(--neon-cyan-glow) !important;
 }
 
 body {
-    background: linear-gradient(135deg, #00d2ff, #3a7bd5);
-    max-width: 400px;
-    margin: 40px auto;
+    min-height: 100vh;
+    background-color: var(--canvas-bg);
+    font-family: var(--font-body);
+    color: var(--tactile-text-light);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: hidden;
+    position: relative;
+    padding: 32px 20px;
+    perspective: 1200px;
+}
+
+/* Luzes e Brilhos Atmosféricos de Fundo */
+.ambient-glow {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(110px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.65;
+    animation: floatGlow 14s ease-in-out infinite alternate;
+}
+
+.glow-cyan {
+    width: 480px;
+    height: 480px;
+    background: radial-gradient(circle, rgba(0, 242, 254, 0.24) 0%, rgba(6, 182, 212, 0) 70%);
+    bottom: -80px;
+    left: 20%;
+}
+
+.glow-blue {
+    width: 540px;
+    height: 540px;
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.28) 0%, rgba(29, 78, 216, 0) 70%);
+    top: 5%;
+    right: 15%;
+    animation-delay: -5s;
+}
+
+.glow-top {
+    width: 600px;
+    height: 300px;
+    background: radial-gradient(ellipse, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
+    top: -100px;
+    left: 40%;
+}
+
+@keyframes floatGlow {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    50% {
+        transform: translate(30px, -20px) scale(1.08);
+    }
+
+    100% {
+        transform: translate(-25px, 25px) scale(0.95);
+    }
+}
+
+/* Layout Principal da Aplicação */
+.app-layout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 64px;
+    width: 100%;
+    max-width: 1120px;
+    position: relative;
+    z-index: 1;
+}
+
+/* ==========================================================================
+   PAINEL PRINCIPAL DE VIDRO FOSCO NEO-TACTILE (Glassmorphism)
+   ========================================================================== */
+
+.tactile-card-wrapper {
+    position: relative;
+    perspective: 1000px;
+    width: 100%;
+    max-width: 430px;
+}
+
+.tactile-glass-plate {
+    position: relative;
+    width: 100%;
+    background: var(--glass-surface);
+    backdrop-filter: blur(28px) saturate(190%);
+    -webkit-backdrop-filter: blur(28px) saturate(190%);
+    border-radius: 38px;
+    padding: 26px 24px;
+    border: 1px solid var(--glass-border-dim);
+    border-top: 1.5px solid var(--glass-border-light);
+    border-left: 1px solid var(--glass-border-light);
+    box-shadow:
+        0 35px 80px -15px rgba(0, 0, 0, 0.8),
+        0 0 35px -5px var(--neon-cyan-glow),
+        inset 0 1px 2px var(--glass-specular),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.4);
+    transition: transform 0.25s ease-out, box-shadow 0.3s ease;
+    will-change: transform;
+    overflow: hidden;
+}
+
+/* Camada de Reflexo de Luz Especular sobre o Vidro */
+.specular-reflection {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.12) 0%, transparent 45%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Barra Superior do Aplicativo */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 2;
+}
+
+.user-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar-ring {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #38bdf8, #2563eb);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 4px 12px rgba(37, 99, 235, 0.45),
+        inset 0 1px 1px rgba(255, 255, 255, 0.6);
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
+}
+
+.avatar-emoji {
+    font-size: 17px;
+}
+
+.user-meta {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-title {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.2px;
+}
+
+.brand-subtitle {
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.tactile-icon-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow:
+        0 4px 10px rgba(0, 0, 0, 0.25),
+        inset 0 1px 1px rgba(255, 255, 255, 0.15);
+    transition: all 0.2s var(--spring-bounce);
+}
+
+.tactile-icon-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.14);
+    transform: translateY(-1.5px);
+    box-shadow:
+        0 6px 14px rgba(0, 0, 0, 0.35),
+        inset 0 1px 1px rgba(255, 255, 255, 0.25);
+}
+
+.tactile-icon-btn:active {
+    transform: scale(0.92);
+}
+
+/* ==========================================================================
+   PÍLULAS TÁTEIS (Padrão 'Defart' e Ativo)
+   ========================================================================== */
+
+.pill-segmented-control {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 22px;
+    position: relative;
+    z-index: 2;
+}
+
+.tactile-pill {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: 24px;
+    font-family: var(--font-heading);
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    transition: all 0.25s var(--spring-bounce);
+    position: relative;
+    user-select: none;
+    letter-spacing: -0.1px;
+
+    /* Pílula Padrão Cerâmica Clara ('Defart') */
+    background: linear-gradient(180deg, #ffffff 0%, #edf2f7 100%);
+    color: var(--tactile-text-dark);
+    box-shadow:
+        0 10px 18px -4px rgba(0, 0, 0, 0.25),
+        0 3px 6px rgba(0, 0, 0, 0.12),
+        inset 0 2px 1.5px #ffffff,
+        inset 0 -2px 3px rgba(0, 0, 0, 0.08);
+}
+
+.tactile-pill:hover:not(.active) {
+    transform: translateY(-2px);
+    box-shadow:
+        0 14px 24px -5px rgba(0, 0, 0, 0.32),
+        0 4px 8px rgba(0, 0, 0, 0.15),
+        inset 0 2px 2px #ffffff;
+}
+
+.tactile-pill:active {
+    transform: scale(0.95) translateY(1px);
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.2),
+        inset 0 2px 4px rgba(0, 0, 0, 0.18);
+}
+
+/* Pílula Ativa Azul Cobalto Vibrante ('active') */
+.tactile-pill.active {
+    background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+    color: #ffffff;
+    box-shadow:
+        0 12px 26px -3px var(--electric-blue-glow),
+        0 4px 10px rgba(29, 78, 216, 0.4),
+        inset 0 2px 1.5px rgba(255, 255, 255, 0.5),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.tactile-pill.active:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 16px 30px -4px var(--electric-blue-glow),
+        0 6px 14px rgba(29, 78, 216, 0.5),
+        inset 0 2px 2px rgba(255, 255, 255, 0.6);
+}
+
+/* ==========================================================================
+   CAMPO DE ENTRADA TÁTIL (Inspirado em 'Colded / Select')
+   ========================================================================== */
+
+.tactile-input-box {
+    background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%);
+    border-radius: 22px;
+    padding: 12px 14px;
+    margin-bottom: 20px;
+    box-shadow:
+        0 14px 28px -5px rgba(0, 0, 0, 0.28),
+        0 4px 10px rgba(0, 0, 0, 0.1),
+        inset 0 2px 2px #ffffff,
+        inset 0 -2px 3px rgba(0, 0, 0, 0.05);
+    position: relative;
+    z-index: 2;
+}
+
+.input-main-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #e2e8f0;
+    border-radius: 16px;
+    padding: 5px 6px 5px 14px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+#campo-tarefa {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--tactile-text-dark);
+    outline: none;
+    padding: 8px 0;
+}
+
+#campo-tarefa::placeholder {
+    color: #64748b;
+    font-weight: 500;
+}
+
+.btn-add-primary {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+    border: none;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow:
+        0 4px 10px rgba(37, 99, 235, 0.4),
+        inset 0 1px 1px rgba(255, 255, 255, 0.4);
+    transition: all 0.2s var(--spring-bounce);
+}
+
+.btn-add-primary:hover {
+    transform: scale(1.05);
+    background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);
+}
+
+.btn-add-primary:active {
+    transform: scale(0.92);
+}
+
+/* Seletor de Categorias */
+.input-options-row {
+    margin-top: 10px;
+    padding: 0 4px;
+}
+
+.tag-selector {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    border: none;
+}
+
+.category-tag {
+    background: #f1f5f9;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 12px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s var(--spring-bounce);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.category-tag:hover {
+    color: #0f172a;
+    background: #ffffff;
+}
+
+.category-tag.active {
+    background: #0f172a;
+    color: #ffffff;
+    box-shadow: 0 3px 8px rgba(15, 23, 42, 0.3);
+}
+
+/* ==========================================================================
+   BARRA DE AÇÕES RÁPIDA ESCURA
+   ========================================================================== */
+
+.dark-control-bar {
+    background: linear-gradient(180deg, #1d2533 0%, #121722 100%);
+    border-radius: 24px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+        0 14px 28px -5px rgba(0, 0, 0, 0.5),
+        inset 0 1px 1px rgba(255, 255, 255, 0.15),
+        inset 0 -1px 3px rgba(0, 0, 0, 0.6);
+    position: relative;
+    z-index: 2;
+}
+
+.control-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #263143 0%, #1a2230 100%);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    color: #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.35),
+        inset 0 1px 1px rgba(255, 255, 255, 0.12),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s var(--spring-bounce);
+}
+
+.control-btn:hover {
+    color: #ffffff;
+    background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
+    transform: translateY(-1.5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.45);
+}
+
+.control-btn:active {
+    transform: scale(0.9);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.control-btn.btn-plus {
+    color: #38bdf8;
+}
+
+/* Anel Circular de Progresso Neon Ciano com Brilho */
+.progress-ring-container {
+    position: relative;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    background: transparent;
+    transition: transform 0.2s var(--spring-bounce);
+}
+
+.progress-ring-container:hover {
+    transform: translateY(-2px);
+}
+
+.progress-ring {
+    transform: rotate(-90deg);
+}
+
+.progress-ring-fill {
+    transition: stroke-dashoffset 0.45s var(--smooth-ease);
+    filter: drop-shadow(0 0 6px var(--neon-cyan));
+}
+
+.progress-text {
+    position: absolute;
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--neon-cyan);
+    font-family: var(--font-heading);
+    letter-spacing: -0.2px;
+}
+
+/* ==========================================================================
+   CONTROLES TÁTEIS: SWITCH 3D E CONTROLE DESLIZANTE
+   ========================================================================== */
+
+.tactile-controls-panel {
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 2;
+}
+
+.control-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.slider-wrapper {
+    flex: 1;
+}
+
+.slider-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 600;
+    color: #cbd5e1;
+    margin-bottom: 6px;
+}
+
+.slider-val {
+    color: var(--neon-cyan);
+    font-weight: 700;
+}
+
+.slider-track-container {
+    position: relative;
+    height: 8px;
+    background: #141b27;
+    border-radius: 10px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+}
+
+.slider-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, #2563eb, #00f2fe);
+    border-radius: 10px;
+    pointer-events: none;
+    box-shadow: 0 0 8px rgba(0, 242, 254, 0.5);
+}
+
+.tactile-slider {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    outline: none;
+    cursor: pointer;
+    z-index: 3;
+}
+
+.tactile-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
+    box-shadow:
+        0 3px 8px rgba(0, 0, 0, 0.4),
+        inset 0 1px 1px #ffffff;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.tactile-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+}
+
+/* Interruptor Físico 3D Neo-Tactile */
+.switch-block {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.switch-caption {
+    font-size: 11px;
+    font-weight: 700;
+    color: #cbd5e1;
+    min-width: 20px;
+}
+
+.tactile-switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 26px;
+    cursor: pointer;
+}
+
+.tactile-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #1e293b;
+    border-radius: 20px;
+    box-shadow:
+        inset 0 2px 4px rgba(0, 0, 0, 0.5),
+        0 1px 1px rgba(255, 255, 255, 0.1);
+    transition: all 0.3s var(--smooth-ease);
+}
+
+.switch-slider::before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+    border-radius: 50%;
+    box-shadow:
+        0 3px 6px rgba(0, 0, 0, 0.35),
+        inset 0 1px 1px #ffffff;
+    transition: all 0.3s var(--spring-bounce);
+}
+
+.tactile-switch input:checked+.switch-slider {
+    background: linear-gradient(90deg, #2563eb, #3b82f6);
+    box-shadow:
+        0 0 12px var(--electric-blue-glow),
+        inset 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+.tactile-switch input:checked+.switch-slider::before {
+    transform: translateX(22px);
+}
+
+/* ==========================================================================
+   CARTÃO DA LISTA DE TAREFAS (Estilo 'Modal' da Referência)
+   ========================================================================== */
+
+.tactile-modal-card {
+    background: linear-gradient(180deg, #f8fafc 0%, #eef2f6 100%);
+    border-radius: 26px;
+    padding: 18px;
+    box-shadow:
+        0 20px 40px -8px rgba(0, 0, 0, 0.35),
+        0 6px 14px rgba(0, 0, 0, 0.12),
+        inset 0 2px 2px #ffffff,
+        inset 0 -2px 3px rgba(0, 0, 0, 0.05);
+    position: relative;
+    z-index: 2;
+    min-height: 230px;
+}
+
+.modal-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding: 0 4px;
+}
+
+.modal-identity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mini-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #0f172a;
+    color: var(--neon-cyan);
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.modal-title {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--tactile-text-dark);
+}
+
+.task-counter-pill {
+    background: #e2e8f0;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #334155;
+}
+
+/* Itens da Lista de Tarefas */
+.neo-task-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    max-height: 240px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.neo-task-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.neo-task-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.neo-task-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.task-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 10px 12px;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    box-shadow:
+        0 4px 10px -2px rgba(0, 0, 0, 0.06),
+        0 1px 3px rgba(0, 0, 0, 0.03);
+    transition: all 0.25s var(--spring-bounce);
+    cursor: pointer;
+    user-select: none;
+}
+
+.task-item:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 8px 18px -3px rgba(0, 0, 0, 0.1),
+        0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.task-left-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    overflow: hidden;
+}
+
+.task-checkbox-ring {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid #94a3b8;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s var(--spring-bounce);
+    flex-shrink: 0;
+    cursor: pointer;
+    padding: 0;
+}
+
+.task-item:hover .task-checkbox-ring {
+    border-color: #3b82f6;
+}
+
+.task-item.completed .task-checkbox-ring {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
+}
+
+.task-check-icon {
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.2s var(--spring-bounce);
+    color: #ffffff;
+}
+
+.task-item.completed .task-check-icon {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.task-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tactile-text-dark);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.task-item.completed .task-text {
+    text-decoration: line-through;
+    color: #64748b;
+}
+
+.task-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #475569;
+    margin-left: 6px;
+    flex-shrink: 0;
+}
+
+.task-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+}
+
+.task-item:hover .task-actions,
+.task-item:focus-within .task-actions {
+    opacity: 1;
+}
+
+.task-delete-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: #dc2626;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.task-delete-btn:hover {
+    background: #fee2e2;
+    transform: scale(1.1);
+}
+
+/* Estado Vazio */
+.empty-state-view {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 36px 12px;
     text-align: center;
 }
 
-.titulo {
-    padding: 8px 12px;
-    
+.empty-state-view.visible {
+    display: flex;
 }
 
-input {
-    padding: 8px;
-    width: 60%;
-    border: none;
-    border-radius: 14px;
+.empty-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #2563eb;
+    font-size: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
-button {
-    padding: 8px 12px;
-    border: none;
-    background-color: #4CAF50;
-    color: white;
-    border-radius: 14px;
-    cursor: pointer;
+.empty-title {
+    font-family: var(--font-heading);
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--tactile-text-dark);
+    margin-bottom: 4px;
+}
+
+.empty-subtitle {
     font-size: 12px;
-    font-weight: bold;
+    color: #64748b;
 }
 
-button:hover {
-    background-color: #45a049;
+/* Rodapé */
+.tactile-footer {
+    text-align: center;
+    margin-top: 18px;
+    font-size: 11px;
+    color: #94a3b8;
+    position: relative;
+    z-index: 2;
 }
 
-button:active {
-    transform: scale(0.90);
+.tactile-footer a {
+    color: #cbd5e1;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
 }
 
-ul {
-    list-style: none;
-    margin: 20px;
-    text-align: left;
+.tactile-footer a:hover {
+    color: var(--neon-cyan);
 }
 
-li {
-    background-color: #f4f4f4;
-    margin-bottom: 8px;
-    padding: 10px;
-    border-radius: 14px;
+/* ==========================================================================
+   PAINEL LATERAL DE DEMONSTRAÇÃO (Visualização Desktop)
+   ========================================================================== */
+
+.neo-tactile-showcase {
+    display: flex;
+    flex-direction: column;
+    max-width: 370px;
+}
+
+.showcase-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
+.showcase-header h2 {
+    font-family: var(--font-heading);
+    font-size: 32px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.6px;
+}
+
+.showcase-badge {
+    background: rgba(0, 242, 254, 0.12);
+    border: 1px solid rgba(0, 242, 254, 0.35);
+    color: var(--neon-cyan);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.2px;
+}
+
+.showcase-description {
+    font-size: 13.5px;
+    color: #94a3b8;
+    line-height: 1.6;
+    margin-bottom: 26px;
+}
+
+.showcase-description strong {
+    color: #ffffff;
+}
+
+.showcase-specs {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+}
+
+.spec-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    padding: 12px 16px;
+    border-radius: 18px;
+    backdrop-filter: blur(12px);
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.spec-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateX(4px);
+}
+
+.spec-bullet {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.glass-bullet {
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.7) 0%, rgba(6, 182, 212, 0.5) 100%);
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+}
+
+.blue-bullet {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    box-shadow: 0 0 10px var(--electric-blue-glow);
+}
+
+.gray-bullet {
+    background: linear-gradient(135deg, #ffffff, #94a3b8);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.interactive-bullet {
+    position: relative;
+    background: var(--neon-cyan);
+    box-shadow: 0 0 10px var(--neon-cyan);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.radar-pulse {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 1.5px solid var(--neon-cyan);
+    animation: radarPulse 2s ease-out infinite;
+}
+
+@keyframes radarPulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(2.2);
+        opacity: 0;
+    }
+}
+
+.spec-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.spec-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #f1f5f9;
+}
+
+.spec-value {
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.spec-notification-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0, 242, 254, 0.08);
+    border: 1px solid rgba(0, 242, 254, 0.2);
+    padding: 10px 16px;
+    border-radius: 20px;
+    margin-top: 6px;
+}
+
+.dot-online {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--neon-cyan);
+    box-shadow: 0 0 8px var(--neon-cyan);
+}
+
+.notif-text {
+    font-size: 12px;
+    font-weight: 700;
+    color: #ffffff;
+    flex: 1;
+}
+
+.notif-shortcut {
+    font-size: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    padding: 2px 6px;
+    border-radius: 6px;
+}
+
+/* ==========================================================================
+   SUPORTE A MOVIMENTO REDUZIDO (Acessibilidade)
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .tactile-glass-plate {
+        transform: none !important;
+    }
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE E OTIMIZAÇÕES DE TOQUE
+   ========================================================================== */
+
+@media (max-width: 900px) {
+    .app-layout {
+        flex-direction: column;
+        gap: 36px;
+    }
+
+    .neo-tactile-showcase {
+        max-width: 430px;
+        width: 100%;
+    }
+
+    body {
+        padding: 20px 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tactile-glass-plate {
+        border-radius: 28px;
+        padding: 20px 16px;
+    }
+
+    .pill-segmented-control {
+        gap: 8px;
+    }
+
+    .tactile-pill {
+        padding: 10px 10px;
+        font-size: 12.5px;
+    }
+
+    .dark-control-bar {
+        padding: 6px 10px;
+    }
+}
+
+
+/* ==========================================================================
+   TUTORIAL
+   ========================================================================== */
+
+/* Fundo escuro semitransparente que cobre a tela */
+.tutorial {
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 7, 20, 0.75);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+/* A caixinha do pop-up */
+.tutorial-card {
+    background: rgba(18, 24, 38, 0.95);
+    border: 1px solid rgba(0, 242, 254, 0.3);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 242, 254, 0.2);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 360px;
+    width: 100%;
+    color: #fff;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transform: scale(0.95);
+    animation: popUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.tutorial-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.tutorial-step {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #00f2fe;
+    letter-spacing: 0.05em;
+}
+
+.tutorial-close {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 1rem;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: color 0.2s;
 }
 
-li:hover {
-    background-color: #e0e0e0;
+.tutorial-close:hover {
+    color: #fff;
+}
+
+.tutorial-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #f8fafc;
+}
+
+.tutorial-description {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.tutorial-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.tutorial-next {
+    background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+    color: #040d1a;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 242, 254, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.tutorial-next:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 242, 254, 0.5);
+}
+
+/* Efeito de destaque no botão que o tutorial está explicando */
+.tutorial-highlight {
+    position: relative;
+    z-index: 10000 !important;
+    outline: 2px solid #00f2fe !important;
+    box-shadow: 0 0 25px rgba(0, 242, 254, 0.8) !important;
+    animation: pulseHighlight 1.5s infinite alternate;
+}
+
+@keyframes pulseHighlight {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(1.08);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes popUp {
+    to {
+        transform: scale(1);
+    }
 }
